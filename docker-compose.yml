@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  database:
+    build:
+      dockerfile: Dockerfile
+      context: database
+    image: stack-database
+    restart: always
+    ports:
+      - "5432:5432"
+    env_file: 
+      - database/database.env
+  
+  database-explorer:
+    image: adminer
+    restart: always
+    ports:
+        - 8000:8080
+
+  api:
+    build: 
+      dockerfile: Dockerfile
+      context: api
+    image: stack-api
+    ports:
+      - "8080:8080"
+    env_file:
+      - api/api.env
