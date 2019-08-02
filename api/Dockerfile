@@ -1,14 +1,19 @@
+FROM adoptopenjdk/openjdk11 as build
 
-FROM vertx/vertx3
+WORKDIR /workspace/app
 
-ENV VERTICLE_NAME api.js
+COPY gradle gradle
+COPY gradlew .
+COPY .gradle .gradle
+COPY build.gradle .
+COPY src src
 
-ENV VERTICLE_HOME /usr/verticles
 
-EXPOSE 8080
+RUN ./gradlew wrapper
+RUN ./gradlew build --stacktrace
 
-COPY $VERTICLE_NAME $VERTICLE_HOME/
-
-WORKDIR $VERTICLE_HOME
-ENTRYPOINT ["sh", "-c"]
-CMD ["exec vertx run $VERTICLE_NAME -cp $VERTICLE_HOME/*"]
+FROM adoptopenjdk/openjdk11
+VOLUME /tmp
+ARG BUILD_DIR=/workspace/app/build/libs
+COPY --from=build ${BUILD_DIR}/app-0.0.1-SNAPSHOT.jar app.jar
+ENTRYPOINT ["java","-jar","/app.jar"]
